@@ -2,14 +2,15 @@ package com.github.stawirej;
 
 import org.junit.jupiter.api.Test;
 
-final class VavrScenarios {
+final class TryScenarios {
 
     @Test
-    void foo(){
+    void trySuccess() {
         // Given
 
         // When
 
         // Then
+
     }
 }
