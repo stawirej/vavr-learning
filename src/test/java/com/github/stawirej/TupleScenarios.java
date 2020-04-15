@@ -72,8 +72,9 @@ final class TupleScenarios {
                     Tuple.of(1, "text");
 
             // When
-            String transformed = tuple
-                    .apply((value, text) -> value + "_" + text);
+            String transformed =
+                    tuple
+                            .apply((value, text) -> value + "_" + text);
 
             // Then
             then(transformed).isEqualTo("1_text");
