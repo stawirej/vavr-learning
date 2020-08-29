@@ -9,6 +9,8 @@ import static io.vavr.API.$;
 import static io.vavr.API.Case;
 import static io.vavr.API.Match;
 import static io.vavr.Predicates.instanceOf;
+import static org.assertj.core.api.Assertions.catchThrowable;
+import static org.assertj.core.api.BDDAssertions.then;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 final class TryScenarios {
@@ -39,76 +41,46 @@ final class TryScenarios {
     }
 
     @Test
-    void foo() {
-        // Given
+    void obfuscate_multiple_exceptions() {
 
-        // When
+        Throwable throwable = catchThrowable(() ->
+                Try.of(A::new)
+                        .map(A::b)
+                        .map(B::c)
+                        .map(C::d)
+                        .getOrElseThrow(this::obfuscatedException)
+        );
 
-        // Then
+        then(throwable)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageStartingWith("Obfuscated exception");
     }
 
-    @Test
-    void multiple_errors() {
-
-        //        Try<D> tryVar =
-        //                Try.of(A::new)
-        //                        .map(A::b)
-        //                        .onFailure(e -> new IllegalStateException("Shielded exception: " + e.getMessage()))
-        //                        .map(B::c)
-        //                        .map(C::d);
-        //
-        //        Match(tryVar).of(
-        //                Case($Success($()), value -> value),
-        //                Case($Failure($()), value -> {
-        //                    System.out.println(value);
-        //                    return value;
-        //                })
-        //        );
-
-        D d = Try.of(A::new)
-                .map(A::b)
-//                .onFailure()
-                .map(B::c)
-                //                .onFailure(e -> {
-                //                    throw new IllegalStateException("Shielded exception: " + e.getMessage());
-                //                })
-                .map(C::d)
-                .getOrElseThrow(this::handle
-                        //                        Match(e).of(
-                        //                                Case($(instanceOf(IllegalArgumentException.class)), new IllegalStateException("Shielded exception: " + e.getMessage())),
-                        //                                Case($(), new RuntimeException("XXX"))
-                        //                        )
-                );
-
-        //                .getOrElseThrow(e -> {
-        //                    throw new IllegalStateException("Shielded exception: " + e.getMessage());
-        //                });
-
-        //        ds.getOrElseThrow(e -> Match(e).of(
-        //                Case($(instanceOf(IllegalArgumentException.class)), o -> {
-        //                    throw new IllegalStateException("Shielded exception: " + e.getMessage());
-        //                }),
-        //                Case($(), o -> {
-        //                    throw new NumberFormatException();
-        //                })));
-
-        //        System.out.println(ds);
-    }
-
-    RuntimeException handle(Throwable e) {
+    private RuntimeException obfuscatedException(Throwable e) {
 
         return Match(e).of(
-                Case($(instanceOf(IllegalArgumentException.class)), new IllegalStateException("Shielded exception: " + e.getMessage())),
+                Case($(instanceOf(IllegalArgumentException.class)), new IllegalStateException("Obfuscated exception: " + e.getMessage())),
                 Case($(), new RuntimeException("XXX"))
         );
+    }
+
+    class A {
+        B b() {
+
+            return new B();
+        }
+
+        @Override
+        public String toString() {
+
+            return "a";
+        }
     }
 
     class B {
         C c() {
 
-            //                        return new C();
             throw new IllegalArgumentException("Invalid XYZ!");
-            //            throw new ArithmeticException("Invalid DDD!");
         }
 
         @Override
@@ -138,19 +110,6 @@ final class TryScenarios {
         public String toString() {
 
             return "d";
-        }
-    }
-
-    class A {
-        B b() {
-
-            return new B();
-        }
-
-        @Override
-        public String toString() {
-
-            return "a";
         }
     }
 }
