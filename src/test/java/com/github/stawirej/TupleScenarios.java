@@ -2,11 +2,14 @@ package com.github.stawirej;
 
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
+import org.junit.jupiter.api.DisplayNameGeneration;
+import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.BDDAssertions.then;
 
+@DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 final class TupleScenarios {
 
     @Nested
