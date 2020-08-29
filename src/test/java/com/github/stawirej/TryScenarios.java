@@ -43,13 +43,14 @@ final class TryScenarios {
     @Test
     void obfuscate_multiple_exceptions() {
 
-        Throwable throwable = catchThrowable(() ->
-                Try.of(A::new)
-                        .map(A::b)
-                        .map(B::c)
-                        .map(C::d)
-                        .getOrElseThrow(this::obfuscatedException)
-        );
+        Throwable throwable =
+                catchThrowable(
+                        () -> Try.of(A::new)
+                                .map(A::b)
+                                .map(B::c)
+                                .map(C::d)
+                                .getOrElseThrow(this::obfuscatedException)
+                );
 
         then(throwable)
                 .isInstanceOf(IllegalStateException.class)
