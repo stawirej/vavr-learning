@@ -45,6 +45,7 @@ final class TryScenarios {
     }
 
     @Test
+    @SuppressWarnings({ "unchecked", "varargs" })
     void handle_null_with_map_failure() {
         // Given
         A a = new A();
