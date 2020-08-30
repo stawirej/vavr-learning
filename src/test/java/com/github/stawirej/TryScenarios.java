@@ -1,9 +1,13 @@
 package com.github.stawirej;
 
+import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.vavr.API.$;
 import static io.vavr.API.Case;
@@ -41,6 +45,96 @@ final class TryScenarios {
     }
 
     @Test
+    void handle_null_with_map_failure() {
+        // Given
+        A a = new A();
+
+        Throwable throwable =
+                catchThrowable(
+                        () -> Try.of(a::foo)
+                                .map(D::nullCollection)
+                                .map(v -> v.stream()
+                                        .filter(x -> x.equals("A"))
+                                        .collect(Collectors.toList()))
+                                .mapFailure(Case($(instanceOf(NullPointerException.class)), new RuntimeException("UUU")))
+                                .get()
+                );
+
+        then(throwable)
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageStartingWith("UUU");
+    }
+
+    @Test
+    void handle_null_with_option() {
+        // Given
+        A a = new A();
+
+        Throwable throwable =
+                catchThrowable(
+                        () -> Try.of(a::foo)
+                                .map(D::nullCollection)
+                                .map(Option::of)
+                                .map(v -> v.getOrElseThrow(() -> new RuntimeException("ZZZ")))
+                                .get()
+                                .stream()
+                                .filter(x -> x.equals("A"))
+                                .collect(Collectors.toList())
+                );
+
+        then(throwable)
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageStartingWith("ZZZ");
+    }
+
+    @Test
+    void handle_null_with_option2() {
+        // Given
+        A a = new A();
+
+        Throwable throwable =
+                catchThrowable(
+                        () -> Try.of(a::foo)
+                                .map(D::nullCollection)
+                                .map(Option::of)
+                                .get()
+                                .onEmpty(() -> {
+                                    throw new RuntimeException("GGG");
+                                })
+                                .get()
+                                .stream()
+                                .filter(x -> x.equals("A"))
+                                .collect(Collectors.toList())
+                );
+
+        then(throwable)
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageStartingWith("GGG");
+    }
+
+    @Test
+    void handle_null_with_option3() {
+        // Given
+        A a = new A();
+
+        Throwable throwable =
+                catchThrowable(
+                        () -> Try.of(a::foo)
+                                .map(D::nullCollection)
+                                .map(Option::of)
+                                .get()
+                                .getOrElseThrow(() -> new RuntimeException("LLL"))
+                                .stream()
+                                .filter(x -> x.equals("A"))
+                                .collect(Collectors.toList())
+                );
+
+        then(throwable)
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageStartingWith("LLL");
+    }
+
+    @Test
     void obfuscate_multiple_exceptions() {
 
         Throwable throwable =
@@ -57,6 +151,12 @@ final class TryScenarios {
                 .hasMessageStartingWith("Obfuscated exception");
     }
 
+    @Override
+    public String toString() {
+
+        return "a";
+    }
+
     private RuntimeException obfuscatedException(Throwable e) {
 
         return Match(e).of(
@@ -71,46 +171,51 @@ final class TryScenarios {
             return new B();
         }
 
-        @Override
-        public String toString() {
-
-            return "a";
-        }
-    }
-
-    class B {
-        C c() {
-
-            throw new IllegalArgumentException("Invalid XYZ!");
-        }
-
-        @Override
-        public String toString() {
-
-            return "b";
-        }
-    }
-
-    class C {
-
-        D d() {
+        D foo() {
 
             return new D();
         }
+    }
+}
 
-        @Override
-        public String toString() {
+class B {
+    C c() {
 
-            return "c";
-        }
+        throw new IllegalArgumentException("Invalid XYZ!");
     }
 
-    class D {
+    @Override
+    public String toString() {
 
-        @Override
-        public String toString() {
+        return "b";
+    }
+}
 
-            return "d";
-        }
+class C {
+
+    D d() {
+
+        return new D();
+    }
+
+    @Override
+    public String toString() {
+
+        return "c";
+    }
+}
+
+class D {
+
+    List<String> nullCollection() {
+
+        return null;
+        //        return Arrays.asList("A", "B");
+    }
+
+    @Override
+    public String toString() {
+
+        return "d";
     }
 }
