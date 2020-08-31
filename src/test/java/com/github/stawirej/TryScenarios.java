@@ -21,27 +21,20 @@ final class TryScenarios {
 
     @Test
     void try_success() throws RuntimeException {
-        // Given
-        Try.of(() -> {
-            int x = 1;
-            //            throw new RuntimeException();
-            return x;
-        })
-                .onSuccess(success -> System.out.println("TryScenarios.trySuccess"))
-                .onFailure(failure -> System.out.println("TryScenarios.trySuccess"))
+
+        Try.of(() -> 1 + 1)
+                .onSuccess(success -> System.out.println("On success"))
+                .onFailure(failure -> System.out.println("On failure"))
                 .recover(v -> {
-                    System.out.println("Recover" + v);
-                    return 1;
+                    System.out.println("Recover");
+                    return 0;
                 })
+                .peek(v -> System.out.println("Peek map"))
                 .map(v -> {
-                    System.out.println("TryScenarios.trySuccess 2");
+                    System.out.println("Map");
                     return v;
-                });
-
-        // When
-
-        // Then
-
+                })
+                .get();
     }
 
     @Test
